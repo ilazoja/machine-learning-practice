@@ -77,22 +77,36 @@ a2 = sigmoid(z2);
 a2 = [ones(size(a2, 1), 1) a2]; %add ones
 z3 = a2*Theta2';
 h = sigmoid(z3); % h = a3
-J = sum(sum((-Y.*log(h) - (1 - Y).*log(1 - h)))) / m
+J = sum(sum((-Y.*log(h) - (1 - Y).*log(1 - h)))) / m;
 
+regularizationFactor = lambda*(sum(sum(Theta1.^2)) + sum(sum(Theta2.^2)))/(2*m);
+J = J + regularizationFactor;
 
+for t = 1:m
+    a1 = X(t, :);
+    z2 = a1 * Theta1';
+    z2 = [ones(size(z2, 1), 1) z2]; %add ones
+    a2 = sigmoid(z2);
+    z3 = a2*Theta2';
+    a3 = sigmoid(z3);
+    output = zeros(1, num_labels);
+    [O,I] = max(a3);
+    output(1,I) = 1;
 
+    % a3 = output;
+    
+    delta3 = a3 - Y(t,:);
+    delta2 = (delta3*Theta2).*sigmoidGradient(z2);
+    delta2 = delta2(2:end);
+    
+    Theta1_grad = Theta1_grad + delta2'*a1;
+    Theta2_grad = Theta2_grad + delta3'*a2;
 
-
-
-
-
-
-
-
-
-
-
-
+end
+    Theta1_grad = Theta1_grad / m;
+    Theta2_grad = Theta2_grad / m;
+    Theta1_grad(:, 2:end) = Theta1_grad(:, 2:end) + (lambda/m)*Theta1(:, 2:end);
+    Theta2_grad(:, 2:end) = Theta2_grad(:, 2:end) + (lambda/m)*Theta2(:, 2:end);
 
 % -------------------------------------------------------------
 
@@ -100,6 +114,7 @@ J = sum(sum((-Y.*log(h) - (1 - Y).*log(1 - h)))) / m
 
 % Unroll gradients
 grad = [Theta1_grad(:) ; Theta2_grad(:)];
+
 
 
 end
